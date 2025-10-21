@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Heart Disease Prediction</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* styles unchanged */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      background: url('https://images.unsplash.com/photo-1603398071551-7c6d8a9e66ad') no-repeat center center/cover;
+    }
+    .sidebar {
+      width: 200px;
+      background-color: #f4f4f4;
+      padding: 30px 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    }
+    .sidebar h2 {
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .nav-link {
+      padding: 10px 15px;
+      border-radius: 6px;
+      background: #fff;
+      color: #333;
+      text-decoration: none;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      transition: 0.2s;
+      cursor: pointer;
+    }
+    .nav-link:hover {
+      background: #007bff;
+      color: white;
+    }
+    .main-content {
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+    .container {
+      width: 100%;
+      max-width: 700px;
+      background: rgba(103, 58, 183, 0.9);
+      color: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0px 5px 25px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+    }
+    input, select {
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 15px;
+      background-color: #fff;
+      color: #333;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border: 2px solid #ccc;
+    }
+    .full-width {
+      grid-column: span 2;
+    }
+    .btn-container {
+      grid-column: span 2;
+      text-align: center;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #ff9800;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background 0.3s;
+      position: relative;
+    }
+    button:hover {
+      background: #e68900;
+    }
+    .loader {
+      display: none;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 24px;
+      height: 24px;
+      border: 3px solid white;
+      border-top: 3px solid transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    .prediction {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      color: #c8e6c9;
+    }
+    .about-text {
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    .back-btn {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .back-btn button {
+      width: auto;
+      padding: 10px 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>❤️ Heart Disease Predictor</h2>
+    <a class="nav-link" onclick="showSection('about')">🏠 Home</a>
+    <a class="nav-link" onclick="showSection('predict')">📊 Prediction</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="container" id="aboutSection" style="display: {{ 'none' if show_prediction_section else 'block' }};">
+      <h2>About This Project</h2>
+      <p class="about-text">
+        This web application predicts the likelihood of heart disease based on several medical parameters.
+        It uses machine learning algorithms trained on real-world datasets to provide accurate and interpretable results.
+        Users can enter health-related information, and the app will analyze the data to return a risk prediction.
+        The purpose of this tool is to assist users in understanding their cardiovascular health.
+      </p>
+    </div>
+
+    <div class="container" id="predictionSection" style="display: {{ 'block' if show_prediction_section else 'none' }};">
+      <h2>🏥 Heart Disease Prediction</h2>
+      <form id="predictionForm" action="/predict" method="post">
+        <div class="input-group"><input type="number" name="age" placeholder="Age (1-120)" min="1" max="120" required></div>
+        <div class="input-group">
+          <select name="sex" required>
+            <option value="" disabled selected>Select Sex</option>
+            <option value="1">Male</option>
+            <option value="0">Female</option>
+          </select>
+        </div>
+        <div class="input-group"><input type="number" name="cp" placeholder="Chest Pain Type (0-3)" min="0" max="3" required></div>
+        <div class="input-group"><input type="number" name="trestbps" placeholder="Resting Blood Pressure (50-200)" min="50" max="200" required></div>
+        <div class="input-group"><input type="number" name="chol" placeholder="Cholesterol (100-500)" min="100" max="500" required></div>
+        <div class="input-group">
+          <select name="fbs" required>
+            <option value="" disabled selected>Fasting Blood Sugar > 120?</option>
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+          </select>
+        </div>
+        <div class="input-group"><input type="number" name="restecg" placeholder="Resting ECG (0-2)" min="0" max="2" required></div>
+        <div class="input-group"><input type="number" name="thalach" placeholder="Max Heart Rate (60-220)" min="60" max="220" required></div>
+        <div class="input-group">
+          <select name="exang" required>
+            <option value="" disabled selected>Exercise-Induced Angina?</option>
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+          </select>
+        </div>
+        <div class="input-group"><input type="number" step="0.1" name="oldpeak" placeholder="ST Depression (0-6)" min="0" max="6" required></div>
+        <div class="input-group"><input type="number" name="slope" placeholder="Slope (0-2)" min="0" max="2" required></div>
+        <div class="input-group"><input type="number" name="ca" placeholder="Major Vessels (0-4)" min="0" max="4" required></div>
+        <div class="input-group full-width"><input type="number" name="thal" placeholder="Thalassemia (0-3)" min="0" max="3" required></div>
+
+        <div class="btn-container">
+          <button type="submit" id="predictBtn">
+            <span id="btnText">Predict</span>
+            <div class="loader" id="loader"></div>
+          </button>
+        </div>
+      </form>
+
+      {% if prediction_text %}
+      <div class="prediction">
+        <h4>{{ prediction_text }}</h4>
+        <p>{{ reference_values | safe }}</p>
+      </div>
+      {% endif %}
+
+      <div class="back-btn">
+        <button onclick="showSection('about')">← Back to Home</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showSection(section) {
+      const about = document.getElementById("aboutSection");
+      const predict = document.getElementById("predictionSection");
+
+      if (section === 'about') {
+        about.style.display = 'block';
+        predict.style.display = 'none';
+      } else {
+        about.style.display = 'none';
+        predict.style.display = 'block';
+      }
+    }
+
+    document.getElementById("predictionForm").addEventListener("submit", function(event) {
+      let predictBtn = document.getElementById("predictBtn");
+      let btnText = document.getElementById("btnText");
+      let loader = document.getElementById("loader");
+
+      loader.style.display = "inline-block";
+      btnText.textContent = "Predicting...";
+      predictBtn.disabled = true;
+    });
+  </script>
+</body>
+</html>
