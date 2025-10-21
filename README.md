@@ -1,2 +1,3 @@
 # Heart_Disease_Prediction
-A machine learning web application built with Flask that predicts heart disease using Logistic Regression and Random Forest models. Includes SHAP explainability, data visualizations (heatmaps, confusion matrix, pie charts), and a responsive HTML frontend with interactive UI.
+A machine learning-powered Flask web app that predicts whether a person is likely to have heart disease based on clinical parameters such as age, blood pressure, cholesterol, and more.
+It integrates Logistic Regression, Random Forest, and SHAP Explainability for model interpretation. The app also includes interactive Chart.js and Matplotlib visualizations.
